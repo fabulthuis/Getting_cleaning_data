@@ -1,6 +1,10 @@
 # This script downloads a zipfile with data concerning an experiment for human activity recognition. 
 # 1. Download the zipfile and unzip the file. To do this, set the boolean downloaded to 'FALSE'
-# 2. Read the data 
+# 2. Read the data and the labels
+# 3. Merge the test and train data
+# 4. Select only the mean and the standard deviation of each variable of interest
+# 5. Melt and cast the data to retain only the average of each variable for each activity and each subject
+# 6. Write the data to csv. 
 
 library(reshape2)
 
@@ -16,7 +20,7 @@ dirTrainData <- paste(dirDataset, "train", sep = "/")
 
 
 # Download the zipfile to the folder 'data' and unzip the file. (Works on Windows 8,
-# for other platforms you might need to change to https and set method = "curl")
+# for other platforms you might need to change to https and set method = "curl" and use https)
 if (!downloaded){
     fileUrl <- "http://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
     if (!file.exists("./data")){
@@ -28,6 +32,9 @@ if (!downloaded){
     fname = unzip(file,list=TRUE)$Name[]
     unzip(file, files=fname, exdir = dir, overwrite = TRUE)
 }
+
+# The directory that contains the data. Change this if the data is somewhere else. 
+dir <- "./data"
 
 # Read the activity and features labels and label them
 features <- read.table(paste(dirDataset, features.file, sep = "/"))
@@ -51,7 +58,7 @@ names(y) <- "activity"
 names(subject) <- "subjectId"
 
 # Select only the measurements on the mean and standard deviation for each measure
-cols <- sapply(names(x), function(y) any(grep("mean|std", y, ignore.case=TRUE)))
+cols <- sapply(names(x), function(y) any(grep("mean()|std()|meanFreq()", y, ignore.case=FALSE)))
 x <- x[,cols]
 
 # replace activityId by activity
@@ -67,7 +74,7 @@ meltData <- melt(dataSet, id = c("subjectId", "activity"), measure.vars = names(
 tidyData <- dcast (meltData, subjectId + activity ~ variable, mean)
 
 # write to csv
-write.csv(tidyData, paste(dir, "tidyData.csv", sep = "/"))
+write.csv(tidyData, paste(dir, "tidyData.csv", sep = "/"), row.names=FALSE)
 
 # Clean up workspace
 rm(x); rm(y); rm(subject); rm(activityLabels); rm(features); rm(dataSet); rm(meltData)                       
