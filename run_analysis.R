@@ -74,7 +74,7 @@ meltData <- melt(dataSet, id = c("subjectId", "activity"), measure.vars = names(
 tidyData <- dcast (meltData, subjectId + activity ~ variable, mean)
 
 # write to csv
-write.csv(tidyData, paste(dir, "tidyData.csv", sep = "/"), row.names=FALSE)
+write.table(tidyData, paste(dir, "tidyData.txt", sep = "/"), row.names=FALSE)
 
 # Clean up workspace
 rm(x); rm(y); rm(subject); rm(activityLabels); rm(features); rm(dataSet); rm(meltData)                       
